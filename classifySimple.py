@@ -8,7 +8,7 @@ nodesLayer2 = 10
 outputs		= 2
 
 x = tf.placeholder('float', [None, 1], 	name='x')
-y = tf.placeholder('float', 			name='y')
+y = tf.placeholder('float')
 
 
 def neuralNetwork(inputData) :
@@ -30,14 +30,15 @@ def neuralNetwork(inputData) :
 	return y_
 
 def trainNetwork(x) :
+	y = tf.placeholder('float')
 	prediction = neuralNetwork(x)
 	cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(prediction, y))
 	optimizer = tf.train.AdamOptimizer().minimize(cost)
 
 	alpha			= 0.5
 	numberOfEpochs 	= 10
-	epochDataSize 	= int(1e5)
-	batchSize		= int(1e2)
+	epochDataSize 	= int(1e6)
+	batchSize		= int(1e3)
 
 	with tf.Session() as sess :
 		model = tf.initialize_all_variables()
@@ -49,7 +50,7 @@ def trainNetwork(x) :
 				xBatch, yBatch = gen.uniformGreaterThan(batchSize, alpha)
 				eo, ec = sess.run([optimizer, cost], feed_dict={x: xBatch, y: yBatch})
 				epochLoss += ec
-			print "Epoch #: ", epoch+1, " epoch loss: ", epochLoss
+			print "Epoch #: ", epoch+1, " epoch loss: ", epochLoss/epochDataSize
 
 		correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y,1))
 		accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
