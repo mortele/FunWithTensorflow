@@ -24,3 +24,6 @@ if __name__ == '__main__' :
 	x,y = uniformGreaterThan(n, alpha)
 	print x
 	print y
+
+	print x.shape
+	print y.shape
