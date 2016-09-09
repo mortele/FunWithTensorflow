@@ -17,11 +17,29 @@ def uniformGreaterThan(numberOfSamples, k, training=True) :
 	return x, y.astype(float)
 
 
+def uniformOrdering(numberOfSamples, training=True) :
+	if not training :
+		oldState = np.random.get_state()
+		np.random.seed(0)
+
+	x1 = np.random.uniform(0,1,numberOfSamples)
+	x2 = np.random.uniform(0,1,numberOfSamples)
+	x1 = x1.reshape([numberOfSamples, 1])
+	x2 = x2.reshape([numberOfSamples, 1])
+	greater = (x1 > x2)
+	less    = (x1 < x2)
+	x = np.concatenate((x1, x2), axis=1)
+	y = np.concatenate((greater, less), axis=1)
+
+	if not training :
+		np.random.set_state(oldState)
+
+	return x, y.astype(float)
+
 if __name__ == '__main__' :
 	n 		= 6
-	alpha 	= 0.5
 
-	x,y = uniformGreaterThan(n, alpha)
+	x,y = uniformOrdering(n)
 	print x
 	print y
 

@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import generateData as gen
 
-
 inputs 		= 1
 nodesLayer1 = 10
 nodesLayer2 = 10
@@ -38,7 +37,7 @@ def trainNetwork(x, plotting=False) :
 	optimizer = tf.train.AdamOptimizer().minimize(cost)
 
 	alpha			= 0.5
-	numberOfEpochs 	= 20
+	numberOfEpochs 	= 10
 	epochDataSize 	= int(1e6)
 	batchSize		= int(1e4)
 	testSize		= int(1e4)
@@ -57,8 +56,8 @@ def trainNetwork(x, plotting=False) :
 			xTest, yTest = gen.uniformGreaterThan(testSize, alpha, training=False)
 			to, testCost = sess.run([optimizer, cost], feed_dict={x: xTest, y: yTest})
 			print "Epoch #: ", epoch+1, \
-				  " epoch loss/data size: ", epochLoss/epochDataSize, \
-				  " test set loss/test size: ", testCost/testSize 
+				  " epoch loss: ", epochLoss, \
+				  " test set loss: ", testCost 
 
 		if plotting :
 			N  = 1000
