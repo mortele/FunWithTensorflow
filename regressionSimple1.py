@@ -5,31 +5,34 @@ import generateData as gen
 import neuralNetwork as nn
 
 inputs 	   = 1
-layerNodes = 20
+layerNodes = 25
 outputs	   = 1
 
-function = lambda z: np.exp(-z);
-a = 0
-b = 5
+function = lambda z: 1/z**12 - 1/z**6
+a = 0.9
+b = 2.0
 
 x = tf.placeholder('float', [None, 1], 	name='x')
 y = tf.placeholder('float')
 
 
 #neuralNetwork = lambda inputData : nn.nn_1layer(inputData, inputs, layerNodes, outputs)
-#neuralNetwork = lambda inputData : nn.nn_2layer(inputData, inputs, layerNodes, layerNodes, outputs)
-neuralNetwork = lambda inputData : nn.nn_3layer(inputData, inputs, layerNodes, layerNodes, layerNodes, outputs)
+#neuralNetwork = lambda inputData : nn.nn_2layer(inputData, inputs, layerNodes, outputs)
+#neuralNetwork = lambda inputData : nn.nn_3layer(inputData, inputs, layerNodes, outputs)
+neuralNetwork = lambda inputData : nn.nn_4layer(inputData, inputs, layerNodes, outputs)
 
 def trainNetwork(x, plotting=False) :
 	y = tf.placeholder('float')
 	prediction = neuralNetwork(x)
-	cost = tf.nn.l2_loss(tf.sub(prediction,y))
-	optimizer = tf.train.AdamOptimizer().minimize(cost)
+	cost = tf.nn.l2_loss(tf.sub(prediction, y))
+	optimizer = tf.train.AdamOptimizer(learning_rate=0.005).minimize(cost)
+	#optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.3).minimize(cost) 
+	#optimizer = tf.train.AdagradOptimizer(learning_rate=0.3).minimize(cost) 
 
 	numberOfEpochs 	= 25
 	epochDataSize 	= int(1e6)
 	batchSize		= int(1e4)
-	testSize		= int(1e4)
+	testSize		= int(2e2)
 
 	with tf.Session() as sess :
 		model = tf.initialize_all_variables()
@@ -53,12 +56,15 @@ def trainNetwork(x, plotting=False) :
 			xx  = xx.reshape([N,1])
 			yy_ = sess.run(prediction, feed_dict={x: xx})
 			#yy  = function(xx)
+			xxx = np.linspace(a,b,testSize)
+			yyy = function(xxx)
 
 			plt.figure(1)
-			plt.plot(xx, yy_, 'ro')
+			plt.plot(xx, yy_, 'r.')
 			plt.hold('on')
-			plt.plot(xx, yy, 'bx')
+			plt.plot(xxx, yyy, 'b--')
 			plt.legend(['nn(x)', 'f(x)'])
+			plt.grid('on')
 			plt.show()
 
 

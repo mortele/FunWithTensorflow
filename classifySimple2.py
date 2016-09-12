@@ -5,15 +5,14 @@ import generateData as gen
 import neuralNetwork as nn
 
 inputs 		= 2
-nodesLayer1 = 10
-nodesLayer2 = 10
+layerNodes  = 10
 outputs		= 2
 
 x = tf.placeholder('float', [None, 2], 	name='x')
 y = tf.placeholder('float')
 
 
-neuralNetwork = lambda inputData : nn.nn_2layer(inputData, inputs, nodesLayer1, nodesLayer2, outputs)
+neuralNetwork = lambda inputData : nn.nn_2layer(inputData, inputs, layerNodes, outputs)
 
 def trainNetwork(x, plotting=False) :
 	y = tf.placeholder('float')
