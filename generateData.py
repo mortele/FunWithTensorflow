@@ -36,6 +36,23 @@ def uniformOrdering(numberOfSamples, training=True) :
 
 	return x, y.astype(float)
 
+
+
+def functionData(numberOfSamples, f, training=True) :
+	if not training :
+		oldState = np.random.get_state()
+		np.random.seed(0)
+
+	x = np.random.uniform(0,1,numberOfSamples)
+	x = x.reshape([numberOfSamples, 1])
+	y = f(x);
+
+	if not training :
+		np.random.set_state(oldState)
+
+	return x, y
+
+
 if __name__ == '__main__' :
 	n 		= 6
 
