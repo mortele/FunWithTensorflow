@@ -38,12 +38,12 @@ def uniformOrdering(numberOfSamples, training=True) :
 
 
 
-def functionData(numberOfSamples, f, training=True) :
+def functionData(numberOfSamples, f, a=0, b=1, training=True) :
 	if not training :
 		oldState = np.random.get_state()
 		np.random.seed(0)
 
-	x = np.random.uniform(0,1,numberOfSamples)
+	x = np.random.uniform(a,b,numberOfSamples)
 	x = x.reshape([numberOfSamples, 1])
 	y = f(x);
 

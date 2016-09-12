@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import generateData as gen
+import neuralNetwork as nn
 
 inputs 		= 1
 nodesLayer1 = 10
@@ -11,24 +12,24 @@ outputs		= 2
 x = tf.placeholder('float', [None, 1], 	name='x')
 y = tf.placeholder('float')
 
-
-def neuralNetwork(inputData) :
-	layer1 = {'weights': tf.Variable(tf.random_normal([inputs, nodesLayer1])),
-			  'biases':  tf.Variable(tf.random_normal([nodesLayer1]))}
-	layer2 = {'weights': tf.Variable(tf.random_normal([nodesLayer1, nodesLayer2])),
-			  'biases':  tf.Variable(tf.random_normal([nodesLayer2]))}
-	output = {'weights': tf.Variable(tf.random_normal([nodesLayer2, outputs])),
-			  'biases':  tf.Variable(tf.random_normal([outputs]))}
-
-	l1 = tf.add(tf.matmul(inputData, layer1['weights']), layer1['biases'])
-	l1 = tf.nn.relu(l1)
-
-	l2 = tf.add(tf.matmul(l1, layer2['weights']), layer2['biases'])
-	l2 = tf.nn.relu(l2)
-
-	y_ = tf.add(tf.matmul(l2, output['weights']), output['biases'])
-
-	return y_
+neuralNetwork = lambda inputData : nn.nn_2layer(inputData, inputs, nodesLayer1, nodesLayer2, outputs)
+#def neuralNetwork(inputData) :
+#	layer1 = {'weights': tf.Variable(tf.random_normal([inputs, nodesLayer1])),
+#			  'biases':  tf.Variable(tf.random_normal([nodesLayer1]))}
+#	layer2 = {'weights': tf.Variable(tf.random_normal([nodesLayer1, nodesLayer2])),
+#			  'biases':  tf.Variable(tf.random_normal([nodesLayer2]))}
+#	output = {'weights': tf.Variable(tf.random_normal([nodesLayer2, outputs])),
+#			  'biases':  tf.Variable(tf.random_normal([outputs]))}
+#
+#	l1 = tf.add(tf.matmul(inputData, layer1['weights']), layer1['biases'])
+#	l1 = tf.nn.relu(l1)
+#
+#	l2 = tf.add(tf.matmul(l1, layer2['weights']), layer2['biases'])
+#	l2 = tf.nn.relu(l2)
+#
+#	y_ = tf.add(tf.matmul(l2, output['weights']), output['biases'])
+#
+#	return y_
 
 def trainNetwork(x, plotting=False) :
 	y = tf.placeholder('float')
