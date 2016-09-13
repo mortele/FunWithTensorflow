@@ -38,12 +38,30 @@ def uniformOrdering(numberOfSamples, training=True) :
 
 
 
-def functionData(numberOfSamples, function, a=0, b=1, training=True) :
+def functionData(numberOfSamples, 
+				 function, 
+				 a=0, 
+				 b=1, 
+				 training=True, 
+				 normal=False,
+				 mu=0.0,
+				 sigma=0.1,
+				 newEpoch=False) :
+
+	if newEpoch :
+		np.random.seed(1)
+
 	if not training :
 		oldState = np.random.get_state()
 		np.random.seed(0)
 
-	x = np.random.uniform(a,b,numberOfSamples)
+	if normal :
+		x = np.random.normal(mu, sigma, numberOfSamples)
+		#x[np.where(x<a)] = mu;
+		#x[np.where(x>b)] = mu;
+	else :
+		x = np.random.uniform(a,b,numberOfSamples)
+
 	x = x.reshape([numberOfSamples, 1])
 	y = function(x);
 
@@ -51,7 +69,6 @@ def functionData(numberOfSamples, function, a=0, b=1, training=True) :
 		np.random.set_state(oldState)
 
 	return x, y
-
 
 if __name__ == '__main__' :
 	n 		= 6
