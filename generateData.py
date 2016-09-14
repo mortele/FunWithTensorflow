@@ -36,8 +36,6 @@ def uniformOrdering(numberOfSamples, training=True) :
 
 	return x, y.astype(float)
 
-
-
 def functionData(numberOfSamples, 
 				 function, 
 				 a=0, 
@@ -46,7 +44,6 @@ def functionData(numberOfSamples,
 				 normal=False,
 				 mu=0.0,
 				 sigma=0.1,
-				 linspace=False,
 				 newEpoch=False) :
 
 	if newEpoch :
@@ -58,10 +55,6 @@ def functionData(numberOfSamples,
 
 	if normal :
 		x = np.random.normal(mu, sigma, numberOfSamples)
-		#x[np.where(x<a)] = mu;
-		#x[np.where(x>b)] = mu;
-	elif linspace :
-		x = np.linspace(a, b, numberOfSamples)
 	else :
 		x = np.random.uniform(a,b,numberOfSamples)
 
@@ -73,12 +66,13 @@ def functionData(numberOfSamples,
 
 	return x, y
 
-if __name__ == '__main__' :
-	n 		= 6
 
-	x,y = uniformOrdering(n)
-	print x
-	print y
+def functionDataLinspace(	numberOfSamples, 
+				 			function, 
+							a=0, 
+				 			b=1) :
 
-	print x.shape
-	print y.shape
+	x = np.linspace(a, b, numberOfSamples)
+	x = x.reshape([numberOfSamples, 1])
+	y = function(x);
+	return x, y

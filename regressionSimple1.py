@@ -5,12 +5,12 @@ import generateData as gen
 import neuralNetwork as nn
 
 inputs 	   = 1
-layerNodes = 5
+layerNodes = 10
 layers     = 4
 outputs	   = 1
 
 function = lambda z: 1/z**12 - 1/z**6
-a = 0.9
+a = 0.87
 b = 1.6
 
 x = tf.placeholder('float', [None, 1], 	name='x')
@@ -30,7 +30,7 @@ def trainNetwork(x, plotting=False) :
 	#optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.0001).minimize(cost) 
 	#optimizer = tf.train.AdagradOptimizer(learning_rate=0.3).minimize(cost) 
 
-	numberOfEpochs 	= 500
+	numberOfEpochs 	= 10000
 	epochDataSize 	= int(1e7)
 	batchSize		= int(1e5)
 	testSize		= int(1e4)
@@ -61,7 +61,7 @@ def trainNetwork(x, plotting=False) :
 
 		if plotting :
 			N     = testSize
-			xx,yy = gen.functionData(testSize, function, a, b, normal=True, sigma=0.15, mu=1.12, training=False)
+			xx,yy = gen.functionData(testSize, function, a, b, linspace=True, training=False)
 			xx  = xx.reshape([N,1])
 			yy_ = sess.run(prediction, feed_dict={x: xx})
 			xxx = np.linspace(a,b,testSize)
