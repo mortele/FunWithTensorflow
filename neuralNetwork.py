@@ -44,10 +44,10 @@ def nn_3layer(inputData, inputs, nodesPerLayer, outputs) :
 			  'biases':  tf.Variable(tf.random_normal([outputs]))}
 
 	l1 = tf.add(tf.matmul(inputData, layer1['weights']), layer1['biases'])
-	l1 = tf.nn.sigmoid(l1)
+	l1 = tf.nn.relu(l1)
 
 	l2 = tf.add(tf.matmul(l1, layer2['weights']), layer2['biases'])
-	l2 = tf.nn.sigmoid(l2)
+	l2 = tf.nn.relu(l2)
 
 	l3 = tf.add(tf.matmul(l2, layer3['weights']), layer3['biases'])
 	l3 = tf.nn.sigmoid(l3)

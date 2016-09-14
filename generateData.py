@@ -46,6 +46,7 @@ def functionData(numberOfSamples,
 				 normal=False,
 				 mu=0.0,
 				 sigma=0.1,
+				 linspace=False,
 				 newEpoch=False) :
 
 	if newEpoch :
@@ -59,6 +60,8 @@ def functionData(numberOfSamples,
 		x = np.random.normal(mu, sigma, numberOfSamples)
 		#x[np.where(x<a)] = mu;
 		#x[np.where(x>b)] = mu;
+	elif linspace :
+		x = np.linspace(a, b, numberOfSamples)
 	else :
 		x = np.random.uniform(a,b,numberOfSamples)
 

@@ -5,7 +5,7 @@ import generateData as gen
 import neuralNetwork as nn
 
 inputs 	   = 1
-layerNodes = 20
+layerNodes = 5
 layers     = 4
 outputs	   = 1
 
@@ -18,28 +18,28 @@ y = tf.placeholder('float')
 
 #neuralNetwork = lambda inputData : nn.nn_1layer(inputData, inputs, layerNodes, outputs)
 #neuralNetwork = lambda inputData : nn.nn_2layer(inputData, inputs, layerNodes, outputs)
-#neuralNetwork = lambda inputData : nn.nn_3layer(inputData, inputs, layerNodes, outputs)
-neuralNetwork = lambda inputData : nn.nn_4layer(inputData, inputs, layerNodes, outputs)
+neuralNetwork = lambda inputData : nn.nn_3layer(inputData, inputs, layerNodes, outputs)
+#neuralNetwork = lambda inputData : nn.nn_4layer(inputData, inputs, layerNodes, outputs)
 #neuralNetwork = lambda inputData : nn.nn_5layer(inputData, inputs, layerNodes, outputs)
 
 def trainNetwork(x, plotting=False) :
 	y = tf.placeholder('float')
 	prediction = neuralNetwork(x)
 	cost = tf.nn.l2_loss(tf.sub(prediction, y))
-	optimizer = tf.train.AdamOptimizer(learning_rate=0.005).minimize(cost)
+	optimizer = tf.train.AdamOptimizer().minimize(cost)
 	#optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.0001).minimize(cost) 
 	#optimizer = tf.train.AdagradOptimizer(learning_rate=0.3).minimize(cost) 
 
-	numberOfEpochs 	= 10
-	epochDataSize 	= int(1e6)
-	batchSize		= int(1e3)
-	testSize		= int(2e2)
+	numberOfEpochs 	= 500
+	epochDataSize 	= int(1e7)
+	batchSize		= int(1e5)
+	testSize		= int(1e4)
 
 	saver = tf.train.Saver()
 
 	with tf.Session() as sess :
-		model = tf.initialize_variables(tf.all_variables, name='init') 
-		#model = tf.initialize_all_variables()
+		#model = tf.initialize_variables(tf.all_variables, name='init') 
+		model = tf.initialize_all_variables()
 		sess.run(model)
 
 		for epoch in xrange(numberOfEpochs) :
@@ -48,14 +48,15 @@ def trainNetwork(x, plotting=False) :
 				newEpoch = False
 				if i==0 :
 					newEpoch = True
-				xBatch, yBatch = gen.functionData(batchSize, function, a, b, normal=True, sigma=0.1, mu=1.12, newEpoch=newEpoch)
+				#xBatch, yBatch = gen.functionData(batchSize, function, a, b, normal=True, sigma=0.1, mu=1.12, newEpoch=newEpoch)
+				xBatch, yBatch = gen.functionData(batchSize, function, a, b, linspace=True, newEpoch=newEpoch)
 				eo, ec = sess.run([optimizer, cost], feed_dict={x: xBatch, y: yBatch})
 				epochLoss += ec
 
-			xTest, yTest = gen.functionData(testSize, function, a, b, training=False)
+			xTest, yTest = gen.functionData(testSize, function, a, b, linspace=True, training=False)
 			to, testCost = sess.run([optimizer, cost], feed_dict={x: xTest, y: yTest})
-			print "Epoch #: %3d  epoch loss: %15f  test set loss: %15f" % (epoch+1, epochLoss, testCost)
-			saver.save(sess, 'LJ-netStates/LJ-state', global_step=epoch, max_to_keep=None)
+			print "Epoch #: %3d  epoch loss/epoch size: %10g  test set loss/test size: %10g" % (epoch+1, epochLoss/float(epochDataSize), testCost/float(testSize))
+			#saver.save(sess, 'LJ-netStates/LJ-state', global_step=epoch)
 
 
 		if plotting :
