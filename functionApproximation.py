@@ -5,8 +5,7 @@ import numpy 				as np
 import matplotlib.pyplot 	as plt
 import generateData 		as gen
 import neuralNetwork 		as nn
-
-
+import datetime 			as time
 
 # Chech for input on the command line.
 loadFlag 		= False
@@ -14,6 +13,7 @@ loadFileName 	= ''
 saveFlag 		= False
 saveDirName		= ''
 saveMetaName	= ''
+trainingDir		= 'TrainingData'
 
 if len(sys.argv) > 1 :
 	i = 1
@@ -25,10 +25,17 @@ if len(sys.argv) > 1 :
 		elif sys.argv[i] == '--save' :
 			i = i + 1
 			saveFlag 		= True
-			saveDirName 	= sys.argv[i]
-			saveMetaName	= 'SavedModels/' + saveDirName + '/meta.dat'
-			if not os.path.exists('SavedModels/' + saveDirName) :
-				os.makedirs('SavedModels/' + saveDirName)
+			now 			= time.datetime.now().strftime("%d.%m-%H.%M.%S")
+			saveDirName 	= trainingDir + '/' + now
+			saveMetaName	= saveDirName + '/' + 'meta.dat'
+
+			# If this directory exists
+			if os.path.exists(saveDirName) :
+				print "Attempted to place data in existing directory, %s. Exiting." % \
+						(saveDirName)
+				exit(1)
+			else :
+				os.makedirs(saveDirName)
 		else :
 			i = i + 1
 
@@ -46,7 +53,7 @@ function = lambda z: 1/z**6 * (1/z**6 - 1)
 
 # Tensorflow variables defined for later use.
 x 		= tf.placeholder('float', [None, 1], 	name='x')
-y 		= tf.placeholder('float', 			name='y')
+y 		= tf.placeholder('float', 				name='y')
 
 ## Helper function for setting up the weights and biases for each hidden layer
 ## of the network. 
@@ -82,7 +89,7 @@ def trainNetwork(x, plotting=False) :
 	optimizer 	= tf.train.AdamOptimizer().minimize(cost)
 	saver 		= tf.train.Saver(max_to_keep=None)
 	
-	numberOfEpochs 	= 10000
+	numberOfEpochs 	= int(1e10)
 	epochDataSize 	= int(1e7)
 	batchSize		= int(1e5)
 	testSize		= int(1e4)
@@ -100,16 +107,19 @@ def trainNetwork(x, plotting=False) :
 				xBatch, yBatch = gen.functionDataLinspace(batchSize, function, a, b)
 				eo, ec = sess.run([optimizer, cost], feed_dict={x: xBatch, y: yBatch})
 				epochLoss += ec
+
 			xTest, yTest = gen.functionDataLinspace(testSize, function, a, b)
 			to, testCost = sess.run([optimizer, cost], feed_dict={x: xTest, y: yTest})
+
 			print "Epoch #: %3d  epoch loss/size: %10g  test set loss/size: %10g" % \
 					(epoch+1, epochLoss/float(epochDataSize), testCost/float(testSize))
 
 			# If saving is enabled, save the graph variables ('w', 'b') and dump
 			# some info about the training so far to SavedModels/<this run>/meta.dat.
 			if saveFlag :
-				saveFileName = 'SavedModels/' + saveDirName + '/ckpt'
-				saver.save(sess, saveFileName, global_step=epoch+1)
+				if epoch % 10 == 0 :
+					saveFileName = saveDirName + '/' 'ckpt'
+					saver.save(sess, saveFileName, global_step=epoch)
 
 				if epoch == 0 :
 					with open(saveMetaName, 'w') as outFile :
