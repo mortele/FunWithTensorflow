@@ -117,11 +117,8 @@ def trainNetwork(x, plotting=False) :
 			# If saving is enabled, save the graph variables ('w', 'b') and dump
 			# some info about the training so far to SavedModels/<this run>/meta.dat.
 			if saveFlag :
-				if epoch % 10 == 0 :
-					saveFileName = saveDirName + '/' 'ckpt'
-					saver.save(sess, saveFileName, global_step=epoch)
-
 				if epoch == 0 :
+					saveEpochNumber = 0
 					with open(saveMetaName, 'w') as outFile :
 						outStr = '# epochs: %d (size: %d), batch: %d, test: %d, nodes: %d, layers: %d' % \
 								 (numberOfEpochs, epochDataSize, batchSize, testSize, nNodes, nLayers)
@@ -130,6 +127,13 @@ def trainNetwork(x, plotting=False) :
 					with open(saveMetaName, 'a') as outFile :
 						outStr = '%g %g' % (epochLoss/float(epochDataSize), testCost/float(testSize))
 						outFile.write(outStr + '\n')
+
+				if epoch % 10 == 0 :
+					saveFileName = saveDirName + '/' 'ckpt'
+					saver.save(sess, saveFileName, global_step=saveEpochNumber)
+					saveEpochNumber = saveEpochNumber + 1
+
+				
 
 trainNetwork(x)
 
