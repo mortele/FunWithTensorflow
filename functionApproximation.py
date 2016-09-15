@@ -116,7 +116,7 @@ def trainNetwork(x, plotting=False) :
 	optimizer 	= tf.train.AdamOptimizer().minimize(cost)
 	saver 		= tf.train.Saver(max_to_keep=None)
 	
-	numberOfEpochs 	= int(1e10)
+	numberOfEpochs 	= 1
 	epochDataSize 	= int(1e7)
 	batchSize		= int(1e5)
 	testSize		= int(1e4)
@@ -160,11 +160,36 @@ def trainNetwork(x, plotting=False) :
 					saver.save(sess, saveFileName, global_step=saveEpochNumber)
 					saveEpochNumber = saveEpochNumber + 1
 
-				
+		# Return some values to plot.
+		np  		= 10000
+		xp,yp  		= gen.functionDataLinspace(np,function,a,b)
+		yp_ 		= sess.run(prediction, feed_dict={x:xp, y:yp})
+		return np, xp[:,0], yp[:,0], yp_[:,0]
+		
 
-trainNetwork(x)
+
+np,xp,yp,yp_ = trainNetwork(x)
 
 
+# Plot the function and the NN approximation.
+plt.figure(1)
+plt.plot(xp, yp, 'b--')
+plt.hold('on')
+plt.plot(xp, yp_, 'r-')
+plt.legend(['LJ(r)', 'NN(r)'])
+plt.xlabel('r')
+plt.ylabel('V(r)')
+plt.title('Comparison: Neural Net and L-J')
+
+# Plot the log10 of the absolute error.
+plt.figure(2)
+plt.semilogy(xp, abs(yp-yp_), 'b-')
+plt.xlabel('r')
+plt.ylabel('|error(r)|')
+plt.title('Absolute error in neural net approximation')
+
+# Show the plots.
+plt.show()
 
 
 
