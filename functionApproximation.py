@@ -1,11 +1,11 @@
 import os
 import sys
-import tensorflow 			as tf
-import numpy 				as np
-import matplotlib.pyplot 	as plt
-import generateData 		as gen
-import neuralNetwork 		as nn
-import datetime 			as time
+import shutil 
+import tensorflow 			as 		tf
+import numpy 				as 		np
+import matplotlib.pyplot 	as 		plt
+import generateData 		as 		gen
+import datetime 			as 		time
 
 # Chech for input on the command line.
 loadFlag 		= False
@@ -36,6 +36,11 @@ if len(sys.argv) > 1 :
 				exit(1)
 			else :
 				os.makedirs(saveDirName)
+
+			# Copy the python source code used to run the training, to preserve
+			# the tf graph (which is not saved by tf.nn.Saver.save()).
+			shutil.copy2(sys.argv[0], saveDirName + '/')
+
 		else :
 			i = i + 1
 
@@ -79,8 +84,30 @@ y 		= tf.placeholder('float', 				name='y')
 #	# ...and for the output layer we employ no activation at all.
 #	return tf.add(tf.matmul(inp, layers[-1]['w']), layers[-1]['b'])
 
+def nn(inputData, inputs, nodesPerLayer, outputs) :
+	layer1 = {'weights': tf.Variable(tf.random_normal([inputs, nodesPerLayer])),
+			  'biases':  tf.Variable(tf.random_normal([nodesPerLayer]))}
+	layer2 = {'weights': tf.Variable(tf.random_normal([nodesPerLayer, nodesPerLayer])),
+			  'biases':  tf.Variable(tf.random_normal([nodesPerLayer]))}
+	layer3 = {'weights': tf.Variable(tf.random_normal([nodesPerLayer, nodesPerLayer])),
+			  'biases':  tf.Variable(tf.random_normal([nodesPerLayer]))}
+	output = {'weights': tf.Variable(tf.random_normal([nodesPerLayer, outputs])),
+			  'biases':  tf.Variable(tf.random_normal([outputs]))}
 
-neuralNetwork = lambda inputData : nn.nn_3layer(inputData, nInputs, nLayers, nOutputs)
+	l1 = tf.add(tf.matmul(inputData, layer1['weights']), layer1['biases'])
+	l1 = tf.nn.relu(l1)
+
+	l2 = tf.add(tf.matmul(l1, layer2['weights']), layer2['biases'])
+	l2 = tf.nn.relu(l2)
+
+	l3 = tf.add(tf.matmul(l2, layer3['weights']), layer3['biases'])
+	l3 = tf.nn.sigmoid(l3)
+
+	y_ = tf.add(tf.matmul(l3, output['weights']), output['biases'])
+
+	return y_
+
+neuralNetwork = lambda inputData : nn(inputData, nInputs, nLayers, nOutputs)
 
 def trainNetwork(x, plotting=False) :
 	y 			= tf.placeholder('float')
