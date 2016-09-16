@@ -7,6 +7,17 @@ import matplotlib.pyplot 	as 		plt
 import generateData 		as 		gen
 import datetime 			as 		time
 
+# Constants.
+nInputs 	= 1			# Number of (float) intputs.
+nNodes 	    = 5			# Number of nodes in each hidden layer.
+nLayers  	= 5			# Number of hidden layers. 
+nOutputs	= 1			# Number of (float) outputs.
+a 			= 0.87		# Lower cut-off for input values to the NN.
+b 			= 1.6		# Upper cut-off for input values to the NN.
+
+# Lennard-Jones functional form (normalized, epsilon=sigma=1).
+function = lambda z: 1/z**6 * (1/z**6 - 1)
+
 # Chech for input on the command line.
 loadFlag 		= False
 loadFileName 	= ''
@@ -15,13 +26,77 @@ saveDirName		= ''
 saveMetaName	= ''
 trainingDir		= 'TrainingData'
 
+def findLastTrainingDir(dirList) :
+	# First, remove any directory which is not named as a date 
+	# according to 'day.month-hour.minute.second'.
+	N = len(dirList)
+	j = 0
+	for i in xrange(N) :
+		if dirList[j].startswith('.') :
+			dirList.pop(j);
+		else :
+			j = j + 1
+	N = len(dirList)
+
+	# Extract the month, day, hour, minute, second for each 
+	# directory.
+	lst  = [[0 for i in xrange(N)] for i in xrange(5)]
+	for i in xrange(len(dirList)) :
+		lst[i][0] = int(dirList[i].split('.')[1].split('-')[0])
+		lst[i][1] = int(dirList[i].split('.')[0])
+		lst[i][2] = int(dirList[i].split('-')[1].split('.')[0])
+		lst[i][3] = int(dirList[i].split('-')[1].split('.')[1])
+		lst[i][4] = int(dirList[i].split('-')[1].split('.')[2])
+
+	# Find the index of the directory list corresponding to the 
+	# last date and time.
+	lstT  = [[lst[i][j] for i in xrange(N)] for j in xrange(5)]
+	index = -1
+	for i in xrange(5) :
+		m = max(lstT[i][:])
+		for j in xrange(N) :
+			if not lstT[j][i] == m :
+				for k in xrange(i,5) :
+					lstT[j][k] = 0
+			else :
+				index = j
+	return dirList[index]
+
+def findLastCheckpoint(lastTrainingDir) :
+	fileList = os.listdir(lastTrainingDir)
+	N = len(fileList)
+	j = 0
+	for i in xrange(N) :
+		if not fileList[j].startswith('ckpt') or \
+			fileList[j].endswith('.meta') :
+			fileList.pop(j)
+		else :
+			j = j + 1
+	N = len(fileList)
+	ckptNumbers = [int(fileList[i].split('-')[1]) for i in xrange(N)]
+	maxCkpt = max(ckptNumbers)
+	return lastTrainingDir + '/' + 'ckpt-' + str(maxCkpt)
+
 if len(sys.argv) > 1 :
 	i = 1
 	while i < len(sys.argv) :
 		if sys.argv[i] == '--load' :
-			i = i + 1
-			loadFlag 		= True
-			loadFileName 	= sys.argv[i]
+			i 	 	 = i + 1
+			loadFlag = True
+			# Check if a filename is given after --load.
+			if len(sys.argv) > i :
+				if not sys.argv[i].startswith('--') :
+					# If the next command line argument exists and does not 
+					# start with '--', then we assume it is the file name.
+					loadFileName 	= sys.argv[i] 
+			else :
+				# If not, we default to the last checkpoint saved by the 
+				# last training run performed.
+				dirs 			= os.listdir(trainingDir)
+				lastTrainingDir = findLastTrainingDir(dirs)
+				lastCkpt		= findLastCheckpoint(trainingDir + '/' + lastTrainingDir)
+				loadFileName	= lastCkpt
+
 		elif sys.argv[i] == '--save' :
 			i = i + 1
 			saveFlag 		= True
@@ -44,45 +119,9 @@ if len(sys.argv) > 1 :
 		else :
 			i = i + 1
 
-
-# Constants.
-nInputs 	= 1			# Number of (float) intputs.
-nNodes 	    = 10		# Number of nodes in each hidden layer.
-nLayers  	= 4			# Number of hidden layers. 
-nOutputs	= 1			# Number of (float) outputs.
-a 			= 0.87		# Lower cut-off for input values to the NN.
-b 			= 1.6		# Upper cut-off for input values to the NN.
-
-# Lennard-Jones functional form (normalized, epsilon=sigma=1).
-function = lambda z: 1/z**6 * (1/z**6 - 1)
-
 # Tensorflow variables defined for later use.
 x 		= tf.placeholder('float', [None, 1], 	name='x')
 y 		= tf.placeholder('float', 				name='y')
-
-## Helper function for setting up the weights and biases for each hidden layer
-## of the network. 
-#def initialize(nodesPrevious, nodesCurrent) :
-#	return {'w': tf.Variable(tf.random_normal([nodesPrevious, nodesCurrent])),
-#			'b': tf.Variable(tf.random_normal([nodesCurrent]))}
-#
-## Definition of the actual network, which does all the heavy lifting.
-#def neuralNetwork(inp) :
-#	nodes  = [nInputs] + [nNodes for i in xrange(nLayers)] + [nOutputs]
-#	layers = [initialize(nodes[i-1], nodes[i]) for i in xrange(1,nLayers+1)]
-#
-#	# Propagate the input, inp, through the all but the last layer,
-#	# using a rectified linear activation function.
-#	for i in xrange(nLayers) :
-#		inp = tf.matmul(inp, layers[i]['w'])
-#		inp = tf.nn.relu(tf.add(inp, layers[i]['b']))
-#
-#	# For the last hidden layer, we use a sigmoid activation function,
-#	inp = tf.add(tf.matmul(inp, layers[-2]['w']), layers[-2]['b'])
-#	inp = tf.nn.sigmoid(inp)
-#
-#	# ...and for the output layer we employ no activation at all.
-#	return tf.add(tf.matmul(inp, layers[-1]['w']), layers[-1]['b'])
 
 def nn(inputData, inputs, nodesPerLayer, outputs) :
 	layer1 = {'weights': tf.Variable(tf.random_normal([inputs, nodesPerLayer])),
@@ -91,6 +130,8 @@ def nn(inputData, inputs, nodesPerLayer, outputs) :
 			  'biases':  tf.Variable(tf.random_normal([nodesPerLayer]))}
 	layer3 = {'weights': tf.Variable(tf.random_normal([nodesPerLayer, nodesPerLayer])),
 			  'biases':  tf.Variable(tf.random_normal([nodesPerLayer]))}
+	layer4 = {'weights': tf.Variable(tf.random_normal([nodesPerLayer, nodesPerLayer])),
+			  'biases':  tf.Variable(tf.random_normal([nodesPerLayer]))}			  
 	output = {'weights': tf.Variable(tf.random_normal([nodesPerLayer, outputs])),
 			  'biases':  tf.Variable(tf.random_normal([outputs]))}
 
@@ -101,9 +142,12 @@ def nn(inputData, inputs, nodesPerLayer, outputs) :
 	l2 = tf.nn.relu(l2)
 
 	l3 = tf.add(tf.matmul(l2, layer3['weights']), layer3['biases'])
-	l3 = tf.nn.sigmoid(l3)
+	l3 = tf.nn.relu(l3)
+	
+	l4 = tf.add(tf.matmul(l3, layer4['weights']), layer4['biases'])
+	l4 = tf.nn.sigmoid(l4)
 
-	y_ = tf.add(tf.matmul(l3, output['weights']), output['biases'])
+	y_ = tf.add(tf.matmul(l4, output['weights']), output['biases'])
 
 	return y_
 
@@ -116,7 +160,7 @@ def trainNetwork(x, plotting=False) :
 	optimizer 	= tf.train.AdamOptimizer().minimize(cost)
 	saver 		= tf.train.Saver(max_to_keep=None)
 	
-	numberOfEpochs 	= 1
+	numberOfEpochs 	= int(1e10)
 	epochDataSize 	= int(1e7)
 	batchSize		= int(1e5)
 	testSize		= int(1e4)
@@ -126,8 +170,12 @@ def trainNetwork(x, plotting=False) :
 		sess.run(model)
 
 		if loadFlag :
+			print "Loading file: ", loadFileName
 			saver.restore(sess, loadFileName)
 
+		print "Running for: ", numberOfEpochs, " epochs"
+		if (saveFlag) :
+			print "Saving to directory: ", saveDirName
 		for epoch in xrange(numberOfEpochs) :
 			epochLoss = 0
 			for i in xrange(epochDataSize/batchSize) :
@@ -155,7 +203,7 @@ def trainNetwork(x, plotting=False) :
 						outStr = '%g %g' % (epochLoss/float(epochDataSize), testCost/float(testSize))
 						outFile.write(outStr + '\n')
 
-				if epoch % 10 == 0 :
+				if epoch % 200 == 0 :
 					saveFileName = saveDirName + '/' 'ckpt'
 					saver.save(sess, saveFileName, global_step=saveEpochNumber)
 					saveEpochNumber = saveEpochNumber + 1
@@ -190,9 +238,6 @@ plt.title('Absolute error in neural net approximation')
 
 # Show the plots.
 plt.show()
-
-
-
 
 
 
