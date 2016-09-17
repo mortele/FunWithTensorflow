@@ -142,6 +142,10 @@ if len(sys.argv) > 1 :
 		else :
 			i = i + 1
 
+if saveFlag and loadFlag :
+	loadDirName = loadFileName.split('ckpt')[0]
+	shutil.copy2(loadDirName + 'meta.dat', saveMetaName)
+
 # Tensorflow variables defined for later use.
 x 		= tf.placeholder('float', [None, 1], 	name='x')
 y 		= tf.placeholder('float', 				name='y')
@@ -226,7 +230,7 @@ def trainNetwork(x, plotting=False) :
 			# If saving is enabled, save the graph variables ('w', 'b') and dump
 			# some info about the training so far to SavedModels/<this run>/meta.dat.
 			if saveFlag :
-				if epoch == 0 :
+				if epoch == 0 and loadFlag == False:
 					saveEpochNumber = 0
 					with open(saveMetaName, 'w') as outFile :
 						outStr = '# epochs: %d (size: %d), batch: %d, test: %d, nodes: %d, layers: %d' % \
@@ -237,7 +241,7 @@ def trainNetwork(x, plotting=False) :
 						outStr = '%g %g' % (epochLoss/float(epochDataSize), testCost/float(testSize))
 						outFile.write(outStr + '\n')
 
-				if epoch % 200 == 0 :
+				if epoch % 50 == 0 :
 					saveFileName = saveDirName + '/' 'ckpt'
 					saver.save(sess, saveFileName, global_step=saveEpochNumber)
 					saveEpochNumber = saveEpochNumber + 1
