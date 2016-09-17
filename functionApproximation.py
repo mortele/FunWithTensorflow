@@ -192,7 +192,7 @@ def trainNetwork(x, plotting=False) :
 	elif not epochInput == -1 and plotFlag == True :
 		numberOfEpochs = epochInput
 
-	if (numberOfEpochs > 100) and (forcePlotFlag == False):
+	if (numberOfEpochs > 100) and (forcePlotFlag == False) and (plotFlag == True):
 		plotFlag = False
 		print "Number of epochs > 100, ignoring --plot argument."
 		print "Use --fplot instead to force plotting for epochs > 100."
