@@ -52,23 +52,22 @@ def findLastTrainingDir(dirList) :
 	# Extract the month, day, hour, minute, second for each 
 	# directory.
 	lst  = [[0 for i in xrange(N)] for i in xrange(5)]
-	for i in xrange(len(dirList)) :
-		lst[i][0] = int(dirList[i].split('.')[1].split('-')[0])
-		lst[i][1] = int(dirList[i].split('.')[0])
-		lst[i][2] = int(dirList[i].split('-')[1].split('.')[0])
-		lst[i][3] = int(dirList[i].split('-')[1].split('.')[1])
-		lst[i][4] = int(dirList[i].split('-')[1].split('.')[2])
+	for i in xrange(N) :
+		lst[0][i] = int(dirList[i].split('.')[1].split('-')[0])
+		lst[1][i] = int(dirList[i].split('.')[0])
+		lst[2][i] = int(dirList[i].split('-')[1].split('.')[0])
+		lst[3][i] = int(dirList[i].split('-')[1].split('.')[1])
+		lst[4][i] = int(dirList[i].split('-')[1].split('.')[2])
 
 	# Find the index of the directory list corresponding to the 
 	# last date and time.
-	lstT  = [[lst[i][j] for i in xrange(N)] for j in xrange(5)]
 	index = -1
 	for i in xrange(5) :
-		m = max(lstT[i][:])
+		m = max(lst[i][:])
 		for j in xrange(N) :
-			if not lstT[j][i] == m :
+			if not lst[i][j] == m :
 				for k in xrange(i,5) :
-					lstT[j][k] = 0
+					lst[k][j] = 0
 			else :
 				index = j
 	return dirList[index]
