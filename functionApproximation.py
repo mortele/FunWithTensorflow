@@ -25,6 +25,17 @@ saveFlag 		= False
 saveDirName		= ''
 saveMetaName	= ''
 trainingDir		= 'TrainingData'
+plotFlag		= False
+forcePlotFlag	= False
+epochInput		= -1
+
+# Checks whether or not the input string is an integer.
+def isInt(input):
+    try: 
+        int(input)
+        return True
+    except ValueError:
+        return False
 
 def findLastTrainingDir(dirList) :
 	# First, remove any directory which is not named as a date 
@@ -84,8 +95,8 @@ if len(sys.argv) > 1 :
 			i 	 	 = i + 1
 			loadFlag = True
 			# Check if a filename is given after --load.
-			if len(sys.argv) > i :
-				if not sys.argv[i].startswith('--') :
+			if len(sys.argv) > i and (not sys.argv[i].startswith('--')) \
+					and (not isInt(sys.argv[i])):
 					# If the next command line argument exists and does not 
 					# start with '--', then we assume it is the file name.
 					loadFileName 	= sys.argv[i] 
@@ -115,6 +126,19 @@ if len(sys.argv) > 1 :
 			# Copy the python source code used to run the training, to preserve
 			# the tf graph (which is not saved by tf.nn.Saver.save()).
 			shutil.copy2(sys.argv[0], saveDirName + '/')
+
+		elif sys.argv[i] == '--plot' :
+			i = i + 1
+			plotFlag = True
+
+		elif sys.argv[i] == '--fplot' :
+			i = i + 1
+			plotFlag  	  = True
+			forcePlotFlag = True
+
+		elif isInt(sys.argv[i]) :
+			i = i + 1
+			epochInput = int(sys.argv[i-1]) 
 
 		else :
 			i = i + 1
@@ -159,8 +183,19 @@ def trainNetwork(x, plotting=False) :
 	cost 		= tf.nn.l2_loss(tf.sub(prediction, y))
 	optimizer 	= tf.train.AdamOptimizer().minimize(cost)
 	saver 		= tf.train.Saver(max_to_keep=None)
-	
-	numberOfEpochs 	= int(1e10)
+
+	global plotFlag
+	global forcePlotFlag
+	numberOfEpochs = int(1e10)
+	if epochInput == -1 and plotFlag == True :
+		numberOfEpochs = 0
+	elif not epochInput == -1 and plotFlag == True :
+		numberOfEpochs = epochInput
+
+	if (numberOfEpochs > 100) and (forcePlotFlag == False):
+		plotFlag = False
+		print "Number of epochs > 100, ignoring --plot argument."
+		print "Use --fplot instead to force plotting for epochs > 100."
 	epochDataSize 	= int(1e7)
 	batchSize		= int(1e5)
 	testSize		= int(1e4)
@@ -218,26 +253,28 @@ def trainNetwork(x, plotting=False) :
 
 np,xp,yp,yp_ = trainNetwork(x)
 
+if plotFlag :
+	print "Plotting function and approximation error."
 
-# Plot the function and the NN approximation.
-plt.figure(1)
-plt.plot(xp, yp, 'b--')
-plt.hold('on')
-plt.plot(xp, yp_, 'r-')
-plt.legend(['LJ(r)', 'NN(r)'])
-plt.xlabel('r')
-plt.ylabel('V(r)')
-plt.title('Comparison: Neural Net and L-J')
+	# Plot the function and the NN approximation.
+	plt.figure(1)
+	plt.plot(xp, yp, 'b--')
+	plt.hold('on')
+	plt.plot(xp, yp_, 'r-')
+	plt.legend(['LJ(r)', 'NN(r)'])
+	plt.xlabel('r')
+	plt.ylabel('V(r)')
+	plt.title('Comparison: Neural Net and L-J')
 
-# Plot the log10 of the absolute error.
-plt.figure(2)
-plt.semilogy(xp, abs(yp-yp_), 'b-')
-plt.xlabel('r')
-plt.ylabel('|error(r)|')
-plt.title('Absolute error in neural net approximation')
+	# Plot the log10 of the absolute error.
+	plt.figure(2)
+	plt.semilogy(xp, abs(yp-yp_), 'b-')
+	plt.xlabel('r')
+	plt.ylabel('|error(r)|')
+	plt.title('Absolute error in neural net approximation')
 
-# Show the plots.
-plt.show()
+	# Show the plots.
+	plt.show()
 
 
 
