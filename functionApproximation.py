@@ -277,7 +277,7 @@ if plotFlag :
 	plt.title('Absolute error in neural net approximation')
 
 	# Show the plots.
-	plt.show()
+	#plt.show()
 
 
 

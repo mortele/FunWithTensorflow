@@ -17,7 +17,7 @@ data = cell2mat(data);
 
 
 %% Plot training error
-skip            = 10;
+skip            = 100;
 trainingCost    = data(:,1);
 testCost        = data(:,2);
 epoch           = linspace(0,size(data, 1), size(data,1));
